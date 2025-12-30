@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Browser-based execution and compatibility framework</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #emulator-container {
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        /* --- LARGE TOUCH CONTROLS --- */
+        #emulator-container .virtual-gamepad {
+            transform: scale(1.5) !important; 
+            transform-origin: bottom center;
+            bottom: 30px !important; 
+        }
+
+        .virtual-gamepad .button {
+            margin: 12px !important; 
+        }
+
+        /* Startup Menu styling */
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            font-family: sans-serif;
+        }
+
+        .btn-load {
+            background: #4CAF50;
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        .toggle-btn {
+            background: #333;
+            color: #ddd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer" class="ui-overlay">
+        <button class="btn-load" onclick="document.getElementById('rom-upload').click()">📂 Load File</button>
+        <input type="file" id="rom-upload" style="display:none" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.md,.gen,.gg,.sms,.n64,.z64,.v64,.nds,.iso,.cso">
+        
+        <button class="toggle-btn" onclick="toggleForceTouch()">
+            🛠️ Force Touch-based controlling apparatus: <span id="touch-status">AUTO</span>
+        </button>
+        <p style="color:#666; font-size: 0.8rem; margin-top: 20px; text-align: center; padding: 0 20px;">
+            Detects many file types.
+        </p>
+    </div>
+
+    <div id="emulator-container"></div>
+
+    <script>
+        // 1. SETUP
+        var EJS_player = '#emulator-container';
+        var EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+        var EJS_core = ''; 
+
+        // 2. CONFIG
+        var EJS_startOnLoaded = true;
+        var EJS_checkBezel = false; 
+        var EJS_gamePad = true; 
+
+        // 3. REMAP A & B BUTTONS
+        var EJS_buttons = {
+            'a': 'b', 
+            'b': 'a'
+        };
+
+        // 4. THE AUTO-DETECTION ENGINE
+        document.getElementById('rom-upload').addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            var ext = file.name.split('.').pop().toLowerCase();
+            
+            const coreMap = {
+                // Handhelds
+                'gba': 'gba',
+                'gb': 'gb',
+                'gbc': 'gb',
+                'nds': 'nds',
+                'iso': 'ppsspp', // PSP
+                'cso': 'ppsspp', // PSP
+                // Consoles
+                'nes': 'nes',
+                'fds': 'nes',
+                'sfc': 'snes',
+                'smc': 'snes',
+                'md': 'segaMD',
+                'gen': 'segaMD',
+                'gg': 'segaGG',
+                'sms': 'segaMS',
+                'n64': 'n64',
+                'v64': 'n64',
+                'z64': 'n64', // Added N64 z64 extension
+                'ws': 'ws',
+                'ngp': 'ngp',
+                'vb': 'vb'
+            };
+
+            EJS_core = coreMap[ext] || 'gba';
+            console.log("Detected: " + ext + " | Loading Core: " + EJS_core);
+
+            window.EJS_gameUrl = URL.createObjectURL(file);
+            document.getElementById('ui-layer').style.display = 'none';
+
+            var script = document.createElement('script');
+            script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+            document.body.appendChild(script);
+
+            script.onload = function() {
+                setTimeout(applyPatches, 2000);
+            };
+        });
+
+        // 5. REMAINING LOGIC
+        var forceTouch = false;
+        function toggleForceTouch() {
+            forceTouch = !forceTouch;
+            document.getElementById('touch-status').innerText = forceTouch ? "ON" : "AUTO";
+            document.getElementById('touch-status').style.color = forceTouch ? "#4CAF50" : "#ddd";
+        }
+
+        function applyPatches() {
+            if (forceTouch) {
+                try {
+                    window.EJS_emulator.isMobile = true;
+                    window.dispatchEvent(new Event('resize'));
+                } catch(e) { console.log("Force mobile failed"); }
+            }
+        }
+    </script>
+</body>
+</html>
