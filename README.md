@@ -1,4 +1,5 @@
-## Hi there 👋
+## my project
+this is my project I have been working on. it focuses on the accurate recreation of legacy computational environments through software-level abstraction and hardware behavior replication. The system interprets original machine instructions, timing characteristics, and input/output behavior in real time, allowing modern platforms to execute workloads designed for entirely different architectures. By bridging generational gaps in processing models, memory layouts, and peripheral interfaces, the project preserves functional authenticity while remaining portable, lightweight, and offline-capable. Its goal is long-term digital preservation, experimentation, and accessibility of historical software systems through modern execution layer.
 
 <!--
 **computing-engine-js/computing-engine-js** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
@@ -14,3 +15,4 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
+Uses emulatorJs framework for compatibility with files.
